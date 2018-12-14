@@ -1,6 +1,6 @@
 % pylab inline
 import glob
-import numpy
+import numpy as np
 import pandas as pd
 from music21 import converter, instrument, note, chord, stream
 from keras.models import Sequential
@@ -31,7 +31,7 @@ def train_network():
     n_epochs = 2
     model.summary()
     model.fit(network_input, network_output, callbacks=[history], epochs=n_epochs, batch_size=64)
-    model.save('LSTM_model.h5')
+    model.save('LSTMmodel.h5')
     
     # Use the model to generate a midi
     prediction_output = generate_notes(model, notes, network_input, len(set(notes)))
@@ -43,7 +43,7 @@ def train_network():
     plt.close()
     
 def get_notes():
-    """ Get all the notes and chords from the midi files in the ./midi_songs directory """
+    """ Get all the notes and chords from the midi files """
     notes = []
 
     for file in glob.glob("Pokemon MIDIs/*.mid"):
@@ -89,7 +89,7 @@ def prepare_sequences(notes, n_vocab):
 
     # reshape the input into a format compatible with LSTM layers
     n_patterns = len(network_input)
-    network_input = numpy.reshape(network_input, (n_patterns, sequence_length, 1))
+    network_input = np.reshape(network_input, (n_patterns, sequence_length, 1))
     
     # normalize input between 0 and 1
     network_input = network_input / float(n_vocab)
@@ -119,7 +119,7 @@ def generate_notes(model, notes, network_input, n_vocab):
     # pick a random sequence from the input as a starting point for the prediction
     pitchnames = sorted(set(item for item in notes))
     
-    start = numpy.random.randint(0, len(network_input)-1)
+    start = np.random.randint(0, len(network_input)-1)
 
     int_to_note = dict((number, note) for number, note in enumerate(pitchnames))
 
@@ -128,16 +128,16 @@ def generate_notes(model, notes, network_input, n_vocab):
 
     # generate 500 notes
     for note_index in range(500):
-        prediction_input = numpy.reshape(pattern, (1, len(pattern), 1))
+        prediction_input = np.reshape(pattern, (1, len(pattern), 1))
         prediction_input = prediction_input / float(n_vocab)
 
         prediction = model.predict(prediction_input, verbose=0)
 
-        index = numpy.argmax(prediction)
+        index = np.argmax(prediction)
         result = int_to_note[index]
         prediction_output.append(result)
         
-        pattern = numpy.append(pattern,index)
+        pattern = np.append(pattern,index)
         pattern = pattern[1:len(pattern)]
 
     return prediction_output

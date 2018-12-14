@@ -5,16 +5,15 @@ import pickle
 import glob
 from __future__ import print_function, division
 from music21 import converter, instrument, note, chord, stream
-from keras.layers import Input, Dense, Reshape, Flatten, Dropout, CuDNNLSTM
+from keras.layers import Input, Dense, Reshape, Dropout, CuDNNLSTM, Bidirectional
 from keras.layers import BatchNormalization, Activation, ZeroPadding2D
 from keras.layers.advanced_activations import LeakyReLU
-from keras.layers.convolutional import UpSampling2D, Conv2D
 from keras.models import Sequential, Model
 from keras.optimizers import Adam
 from keras.utils import np_utils
 
 def get_notes():
-    """ Get all the notes and chords from the midi files in the ./midi_songs directory """
+    """ Get all the notes and chords from the midi files """
     notes = []
 
     for file in glob.glob("Pokemon MIDIs/*.mid"):
@@ -167,7 +166,7 @@ class GAN():
 
         model = Sequential()
         model.add(CuDNNLSTM(512, input_shape=self.seq_shape, return_sequences=True))
-        model.add(CuDNNLSTM(512))
+        model.add(Bidirectional(CuDNNLSTM(512)))
         model.add(Dense(512))
         model.add(LeakyReLU(alpha=0.2))
         model.add(Dense(256))
@@ -245,11 +244,12 @@ class GAN():
               self.disc_loss.append(d_loss[0])
               self.gen_loss.append(g_loss)
         
-        self.generate()
+        self.generate(notes)
         self.plot_loss()
         
-    def generate(self):
+    def generate(self, input_notes):
         # Get pitch names and store in a dictionary
+        notes = input_notes
         pitchnames = sorted(set(item for item in notes))
         int_to_note = dict((number, note) for number, note in enumerate(pitchnames))
         
@@ -274,4 +274,4 @@ class GAN():
 
 if __name__ == '__main__':
   gan = GAN(rows=100)    
-  gan.train(epochs=100000, batch_size=64, sample_interval=1000)
+  gan.train(epochs=5000, batch_size=32, sample_interval=1)
