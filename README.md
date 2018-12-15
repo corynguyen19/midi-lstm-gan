@@ -1,6 +1,6 @@
 # MIDI File LSTM & GAN
 Using LSTMs and GANs to Generate Music from MIDI Files (APM Fall 2018)
-Check out our blog post here!
+Check out our blog post [here](https://medium.com/@abrahamkhan/generating-pokemon-inspired-music-from-neural-networks-bc240014132)! 
 
 ## Requirements:
 * Python 3.x
